@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.9">
+  <DUT Name="PID_Parameter_Strukt" Id="{d74aa6da-7e06-4b3e-883e-239b83fa4210}">
+    <Declaration><![CDATA[TYPE PID_Parameter_Strukt :
+STRUCT
+	K_p : REAL;		// Reglerverstärkung
+	T_i : REAL;		// I-Anteil
+	T_d : REAL; 	// D-Anteil
+	N : UINT;		// D-Anteil Filterung
+	ARW : BOOL;		// Anti-Reset Windup Aktiv
+	u_min : REAL;	// Steuergrösse minimaler Wert
+	u_max : REAL;	// Steuergrösse maximaler Wert
+	Tr : REAL;		// ARW Faktor
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

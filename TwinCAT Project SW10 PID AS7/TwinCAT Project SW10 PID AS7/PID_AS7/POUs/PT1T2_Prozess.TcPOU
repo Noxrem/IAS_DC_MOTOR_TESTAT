@@ -1,0 +1,77 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.9">
+  <POU Name="PT1T2_Prozess" Id="{3e84a9d0-abdb-44e9-81ca-1d0ec5333c03}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK PT1T2_Prozess
+VAR_INPUT
+	u : REAL;						// Aktuelle Steuergrösse
+	Modus : System_Modus_Enum;		// Aktueller Modus(Init oder Run)
+	Param : PT1T2_Parameter_Strukt;	// Parameter vom PT1T2 Modell
+	T : REAL;						// Abtastzeit
+END_VAR
+VAR_OUTPUT
+	y_k : REAL;
+END_VAR
+VAR
+	b_0: REAL;
+	b_1: REAL;
+	c_1: REAL;
+	c_2: REAL;
+	
+	a_1: REAL;
+	a_2: REAL;
+	
+	y_k_1: REAL;
+	y_k_2: REAL;
+	u_k_1: REAL;
+	u_k_2: REAL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// Repräsentiert die Strecke
+
+CASE Modus OF
+	// Init Modus berechnet die Koeffizienten für H(z)
+	System_Modus_Enum.System_Init:
+		a_1 := EXP(-T/Param.T_1);
+		a_2 := EXP(-T/Param.T_2);
+		b_0 := Param.K/(Param.T_1 - Param.T_2)*(Param.T_1 * (1 - a_1)- Param.T_2 * ( 1 - a_2));
+		b_1 := Param.K/(Param.T_1- Param.T_2)*(Param.T_2 * a_1 * (1 - a_2) - Param.T_1 * a_2 * (1 - a_1));
+		c_1 := -(a_1 + a_2);
+		c_2 := a_1 * a_2;
+
+	// Run Modus implementiert die Differenzengleichung
+	System_Modus_Enum.System_Run: 
+		y_k := -c_1 * y_k_1 - c_2 * y_k_2 + b_0 * u_k_1 + b_1 * u_k_2;
+		y_k_2 := y_k_1;
+		y_k_1 := y_k;
+		
+		u_k_2 := u_k_1;
+		u_k_1 := u;
+		
+		
+END_CASE]]></ST>
+    </Implementation>
+    <LineIds Name="PT1T2_Prozess">
+      <LineId Id="9" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="42" Count="1" />
+      <LineId Id="36" Count="0" />
+      <LineId Id="22" Count="1" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="27" Count="0" />
+      <LineId Id="19" Count="0" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="37" Count="0" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="44" Count="0" />
+      <LineId Id="48" Count="0" />
+      <LineId Id="51" Count="0" />
+      <LineId Id="49" Count="1" />
+      <LineId Id="45" Count="0" />
+      <LineId Id="17" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

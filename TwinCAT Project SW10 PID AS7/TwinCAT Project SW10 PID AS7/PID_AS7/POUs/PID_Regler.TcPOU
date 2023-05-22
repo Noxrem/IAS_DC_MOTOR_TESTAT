@@ -1,0 +1,152 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.9">
+  <POU Name="PID_Regler" Id="{7dcd331b-5f89-4474-abe4-edc66f385524}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK PID_Regler
+VAR_INPUT
+	ref : REAL;						// Aktuelle Referenzgrösse (Soll-Grösse)
+ 	y : REAL;						// Aktuelle Regelgrösse (Ist-Grösse)
+	Modus : System_Modus_Enum;		// Aktueller Modus (Init oder Run)
+	Param : PID_Parameter_Strukt;	// Parameter der PID Reglers
+	T : REAL;						// Abtastzeit
+END_VAR
+VAR_OUTPUT
+	u_r : REAL;						// Stellgrösse Output
+END_VAR
+VAR
+	u_k: REAL;						// P-Anteil des Reglers
+	u_i_k: REAL;					// I-Anteil des Reglers
+	u_d_k: REAL;					// D-Anteil des Reglers
+	
+	u_i_k_1: REAL;					// I-Anteil u_i[k-1]
+	
+	e_k: REAL;						// Fehler e_k := ref - y;
+	e_k_1: REAL;					// Fehler e[k-1]
+	
+	i: REAL;						// Param.K_p / Param.T_i i-Faktor
+	ad: REAL;						// Vorfaktor D-Anteil
+	bd: REAL;						// Vorfaktor D-Anteil
+	u_d_k_1: REAL;					// D-Anteil u_d[k-1]
+	u_r_oS: REAL;					// u_r ohne Sättigung
+	y_1: REAL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// Repräsentiert den Regler
+
+// CPU Belastung minimieren und soviel wie möglich schon im Init Modus berechnen
+CASE Modus OF
+	/// UNDEFINED ////
+	System_Modus_Enum.enum_member:
+		Modus := System_Modus_Enum.System_Init;
+	
+	/// INIT ///
+	System_Modus_Enum.System_Init:
+		i := Param.K_p / Param.T_i;
+		Param.N := 10;
+		ad := Param.T_d / (Param.T_d + Param.N * T);
+		bd := (Param.K_p * Param.N * Param.T_d) / (Param.T_d + Param.N * T);
+		Param.Tr := 0.001;
+	
+	/// RUN ///
+	System_Modus_Enum.System_Run:
+		e_k := ref - y;
+		// A4: Diskretisiere den P-Anteil des analogen PID Reglers
+		// Gibt keine andere Möglichkeit für u_k
+		
+		// P-Anteil
+		u_k := Param.K_p * e_k;
+		
+		// A6: D-Anteil mit der Rückwärtsrechteckregel
+		u_d_k := - (ad * u_d_k_1 + bd * (y - y_1));
+		
+		// Ohne Sättigung
+		u_r_oS := u_k + u_i_k + u_d_k;
+		
+		// AS_8_A_1 Mit Saturation
+		IF u_r_oS > param.u_max THEN
+			u_r := Param.u_max;
+		ELSIF u_r_oS < param.u_min THEN
+			u_r := Param.u_min;
+		ELSE
+			// Sättigungsbereich nicht Erreicht und somit einfache Zuweisung
+			u_r := u_r_oS;
+		END_IF
+		
+		// Anti Reset (ARW) AS_8
+		IF Param.ARW THEN
+			// Mit Anti-Reset Windup. I-Anteil limitieren
+			u_i_k := u_i_k_1 + i * ((e_k + e_k_1) / 2) * T + (T / Param.Tr) * (u_r - u_r_oS);
+		ELSE
+			// A5: Diskretisiere den I-Anteil des analogen PID Reglers mit Trapezregel (in Rek. Form)
+			u_i_k := u_i_k_1 + i * ((e_k + e_k_1) / 2) * T;
+		END_IF
+		
+		
+		// Zuweisung alter Werte
+		e_k_1 := e_k;
+		u_d_k_1 := u_d_k;
+		u_i_k_1 := u_i_k;
+		y_1 := y;
+		
+	
+END_CASE
+
+
+]]></ST>
+    </Implementation>
+    <LineIds Name="PID_Regler">
+      <LineId Id="9" Count="0" />
+      <LineId Id="29" Count="1" />
+      <LineId Id="32" Count="0" />
+      <LineId Id="54" Count="2" />
+      <LineId Id="58" Count="0" />
+      <LineId Id="60" Count="0" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="59" Count="0" />
+      <LineId Id="141" Count="0" />
+      <LineId Id="61" Count="0" />
+      <LineId Id="63" Count="0" />
+      <LineId Id="140" Count="0" />
+      <LineId Id="36" Count="0" />
+      <LineId Id="101" Count="0" />
+      <LineId Id="67" Count="1" />
+      <LineId Id="94" Count="0" />
+      <LineId Id="143" Count="0" />
+      <LineId Id="147" Count="1" />
+      <LineId Id="69" Count="0" />
+      <LineId Id="95" Count="0" />
+      <LineId Id="100" Count="0" />
+      <LineId Id="70" Count="0" />
+      <LineId Id="144" Count="0" />
+      <LineId Id="131" Count="0" />
+      <LineId Id="76" Count="0" />
+      <LineId Id="130" Count="0" />
+      <LineId Id="86" Count="0" />
+      <LineId Id="77" Count="0" />
+      <LineId Id="79" Count="0" />
+      <LineId Id="81" Count="0" />
+      <LineId Id="83" Count="1" />
+      <LineId Id="132" Count="0" />
+      <LineId Id="85" Count="0" />
+      <LineId Id="80" Count="0" />
+      <LineId Id="151" Count="0" />
+      <LineId Id="87" Count="0" />
+      <LineId Id="150" Count="0" />
+      <LineId Id="142" Count="0" />
+      <LineId Id="134" Count="0" />
+      <LineId Id="136" Count="2" />
+      <LineId Id="135" Count="0" />
+      <LineId Id="98" Count="0" />
+      <LineId Id="91" Count="0" />
+      <LineId Id="102" Count="0" />
+      <LineId Id="92" Count="1" />
+      <LineId Id="149" Count="0" />
+      <LineId Id="179" Count="1" />
+      <LineId Id="66" Count="0" />
+      <LineId Id="35" Count="0" />
+      <LineId Id="42" Count="0" />
+      <LineId Id="45" Count="0" />
+      <LineId Id="25" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

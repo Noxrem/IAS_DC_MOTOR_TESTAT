@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.9">
+  <DUT Name="System_Modus_Enum" Id="{b0d67694-afeb-44ec-9384-a4ab9b18e398}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+{attribute 'strict'}
+TYPE System_Modus_Enum :
+(
+	enum_member := 0,
+	System_Init,
+	System_Run
+);
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

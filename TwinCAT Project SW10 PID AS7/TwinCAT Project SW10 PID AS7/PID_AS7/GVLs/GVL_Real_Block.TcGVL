@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.9">
+  <GVL Name="GVL_Real_Block" Id="{50f06dda-a927-410c-a45f-38223e00a88a}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+VAR_GLOBAL
+	counter_overflow AT %I* : BOOL;
+	counter_underflow AT %I* : BOOL;
+	counter_value AT %I* : UINT;
+	motor_enable AT %Q* : BOOL;
+	motor_voltage AT %Q* : INT;
+	
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>
