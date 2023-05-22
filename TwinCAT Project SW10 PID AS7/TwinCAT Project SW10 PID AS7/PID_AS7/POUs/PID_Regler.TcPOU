@@ -42,10 +42,10 @@ CASE Modus OF
 	/// INIT ///
 	System_Modus_Enum.System_Init:
 		i := Param.K_p / Param.T_i;
-		Param.N := 10;
+		Param.N := 20;
 		ad := Param.T_d / (Param.T_d + Param.N * T);
 		bd := (Param.K_p * Param.N * Param.T_d) / (Param.T_d + Param.N * T);
-		Param.Tr := 0.001;
+		Param.Tr := 0.003162;
 	
 	/// RUN ///
 	System_Modus_Enum.System_Run:
@@ -57,7 +57,7 @@ CASE Modus OF
 		u_k := Param.K_p * e_k;
 		
 		// A6: D-Anteil mit der Rückwärtsrechteckregel
-		u_d_k := - (ad * u_d_k_1 + bd * (y - y_1));
+		u_d_k :=  (ad * u_d_k_1 + bd * (e_k - e_k_1));
 		
 		// Ohne Sättigung
 		u_r_oS := u_k + u_i_k + u_d_k;

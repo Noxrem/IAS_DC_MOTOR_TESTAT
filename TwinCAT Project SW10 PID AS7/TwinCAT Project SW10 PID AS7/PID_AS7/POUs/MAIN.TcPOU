@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.9">
   <POU Name="MAIN" Id="{bf7f390c-9673-4c1a-a757-c2e3b7e9acb8}" SpecialFunc="None">
     <Declaration><![CDATA[PROGRAM MAIN
 VAR
@@ -10,9 +10,10 @@ VAR
 	T : REAL;
 	PID_1 : PID_Regler;
 	PT1T2_1 : PT1T2_Prozess;
-	ref : REAL;
+	ref_rpm : REAL;
 	conversion_rpm : EncoderOverflow_RPMConversion;
-	actual_rpm: REAL;
+	y_rpm : REAL;
+	u_volt : REAL;
 	initial_voltage: REAL := 0;
 END_VAR
 ]]></Declaration>
@@ -20,27 +21,25 @@ END_VAR
       <ST><![CDATA[T := 0.001;		// Abtastzeit 1ms
 GVL_Real_Block.motor_enable := TRUE;
 
-GVL_Real_Block.motor_voltage := F_VOLTAGE_TO_INT(voltage := initial_voltage);
-conversion_rpm(rpm_value => actual_rpm);
 
+conversion_rpm(rpm_value => y_rpm);
 
-
-
-// Prozessparameter (PT1T2) definieren: Vollständig definiert
-PT1T2_1.Param.K := 10;
-PT1T2_1.Param.T_1 := 0.1;		// Ti = 10 * T
-PT1T2_1.Param.T_2 := 0.01;		// Td = 0.1 * Ti
+// Systemparameter (PT1T2) definieren: Vollständig definiert
+PT1T2_1.Param.K := 665;
+PT1T2_1.Param.T_1 := 0.0073;		// Ti = 10 * T
+PT1T2_1.Param.T_2 := 0.0513;		// Td = 0.1 * Ti
 
 // Reglerparameter (PID)
-PID_1.Param.K_p := 2.682;		//Kp 1/K, 10/K, 100/K
-PID_1.Param.T_i := 1/55.34;
-PID_1.Param.T_d := 0;
+PID_1.Param.K_p := 1/PT1T2_1.Param.K;		//Kp 1/K, 10/K, 100/K
+PID_1.Param.T_i := 10 * T;
+PID_1.Param.T_d := T;
 PID_1.Param.u_max := 24;					// Von Stellgrössen Limitierung gegeben
 PID_1.Param.u_min := -24;						// Von Stellgrössen Limitierung gegeben
 PID_1.Param.ARW := TRUE;					// Ein-/Ausschaltung Anti-Reset Windup
 
 // Regler für DC-Motor implementieren
-//PID_1(ref := ref, y := actual_rpm, Modus := Modus, Param := PID_1.Param, T := T, u_r => initial_voltage);
+PID_1(ref := ref_rpm, y := y_rpm, Modus := Modus, Param := PID_1.Param, T := T, u_r => u_volt);
+GVL_Real_Block.motor_voltage := F_VOLTAGE_TO_INT(voltage := u_volt);
 
 // A8 : Regelkreis implementieren
 //PID_1(ref:= ref, y:= PT1T2_1.y_k, Modus := Modus, T := T);
@@ -61,9 +60,6 @@ Modus := System_Modus_Enum.System_Run;
       <LineId Id="106" Count="0" />
       <LineId Id="117" Count="1" />
       <LineId Id="24" Count="0" />
-      <LineId Id="122" Count="0" />
-      <LineId Id="120" Count="0" />
-      <LineId Id="123" Count="0" />
       <LineId Id="119" Count="0" />
       <LineId Id="2" Count="0" />
       <LineId Id="13" Count="2" />
@@ -76,6 +72,7 @@ Modus := System_Modus_Enum.System_Run;
       <LineId Id="22" Count="0" />
       <LineId Id="139" Count="0" />
       <LineId Id="138" Count="0" />
+      <LineId Id="166" Count="0" />
       <LineId Id="21" Count="0" />
       <LineId Id="23" Count="0" />
       <LineId Id="29" Count="0" />
