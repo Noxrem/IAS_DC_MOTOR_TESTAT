@@ -30,9 +30,9 @@ PT1T2_1.Param.T_1 := 0.0073;		// Ti = 10 * T
 PT1T2_1.Param.T_2 := 0.0513;		// Td = 0.1 * Ti
 
 // Reglerparameter (PID)
-PID_1.Param.K_p := 1/PT1T2_1.Param.K;		//Kp 1/K, 10/K, 100/K
-PID_1.Param.T_i := 10 * T;
-PID_1.Param.T_d := T;
+PID_1.Param.K_p := 0.0026;//1/PT1T2_1.Param.K;		//Kp 1/K, 10/K, 100/K
+PID_1.Param.T_i := 0.0386;//10 * T;
+PID_1.Param.T_d := 0;//T;
 PID_1.Param.u_max := 24;					// Von Stellgrössen Limitierung gegeben
 PID_1.Param.u_min := -24;						// Von Stellgrössen Limitierung gegeben
 PID_1.Param.ARW := TRUE;					// Ein-/Ausschaltung Anti-Reset Windup
